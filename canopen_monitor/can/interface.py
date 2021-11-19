@@ -34,6 +34,7 @@ class Interface(SocketCanDev):
         self.last_activity = dt.datetime.now()
         self.socket.settimeout(_SOCK_TIMEOUT)
         self.listening = False
+        self.err = 'N/A'
 
     def __enter__(self: Interface) -> Interface:
         """The entry point of an `Interface` in a `with` statement
@@ -101,7 +102,7 @@ class Interface(SocketCanDev):
         >>> iface.start()
         """
         self.stop()
-        self.start(False)
+        self.start()
 
     def recv(self: Interface) -> Message:
         """A wrapper for `pyvit.hw.SocketCanDev.recv()`
@@ -114,19 +115,14 @@ class Interface(SocketCanDev):
             is 0.3 seconds), otherwise returns None
         :rtype: Message, None
         """
-        try:
-            frame = super().recv()
-            self.last_activity = dt.datetime.now()
-            return Message(frame.arb_id,
-                           data=list(frame.data),
-                           frame_type=frame.frame_type,
-                           interface=self.name,
-                           timestamp=dt.datetime.now(),
-                           extended=frame.is_extended_id)
-        except OSError:
-            return None
-        except socket.timeout:
-            return None
+        frame = super().recv()
+        self.last_activity = dt.datetime.now()
+        return Message(frame.arb_id,
+                       data=list(frame.data),
+                       frame_type=frame.frame_type,
+                       interface=self.name,
+                       timestamp=dt.datetime.now(),
+                       extended=frame.is_extended_id)
 
     @property
     def is_up(self: Interface) -> bool:
@@ -137,7 +133,7 @@ class Interface(SocketCanDev):
         """
         if_dev = psutil.net_if_stats().get(self.name)
         if(if_dev is not None):
-            return if_dev.isup and self.age < _STALE_INTERFACE
+            return if_dev.isup
         return False
 
     @property
@@ -184,4 +180,4 @@ class Interface(SocketCanDev):
         return dt.datetime.now() - self.last_activity
 
     def __str__(self: Interface) -> str:
-        return self.name
+        return f'{self.name} ({self.age})a'

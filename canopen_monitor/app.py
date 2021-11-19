@@ -2,7 +2,7 @@ from __future__ import annotations
 import curses
 import curses.ascii
 import datetime as dt
-from easygui import fileopenbox
+# from easygui import fileopenbox
 from shutil import copy
 from enum import Enum
 from . import APP_NAME, \
@@ -342,16 +342,16 @@ class App:
         Toggles Add File window
         :return: None
         """
-        filepath = fileopenbox(title='Select Object Dictionary Files',
-                               filetypes=[['*.dcf', '*.eds', '*.xdd',
-                                           'Object Dictionary Files']],
-                               multiple=False,
-                               default='~/.cache/canopen-monitor/')
+        # filepath = fileopenbox(title='Select Object Dictionary Files',
+        #                        filetypes=[['*.dcf', '*.eds', '*.xdd',
+        #                                    'Object Dictionary Files']],
+        #                        multiple=False,
+        #                        default='~/.cache/canopen-monitor/')
 
-        if (filepath is not None):
-            file = eds.load_eds_file(filepath, self.features.ecss_time)
-            copy(filepath, CACHE_DIR)
-            self.eds_configs[file.node_id] = file
+        # if (filepath is not None):
+        #     file = eds.load_eds_file(filepath, self.features.ecss_time)
+        #     copy(filepath, CACHE_DIR)
+        #     self.eds_configs[file.node_id] = file
 
     def f4(self) -> None:
         """
@@ -453,8 +453,9 @@ class App:
         # Draw the interfaces
         for iface in ifaces:
             color = curses.color_pair(1) if iface[1] else curses.color_pair(3)
-            sl = len(iface[0])
-            self.screen.addstr(0, pos, iface[0], color)
+            istr = f'{iface[0]} ({int(iface[2].total_seconds())}) [{iface[3]}]'.ljust(40, ' ')
+            sl = len(istr)
+            self.screen.addstr(0, pos, istr, color)
             pos += sl + 1
 
     def __draw__footer(self: App) -> None:

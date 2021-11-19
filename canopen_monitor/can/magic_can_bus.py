@@ -29,7 +29,7 @@ class MagicCANBus:
             indication an `UP/DOWN` status
         :rtype: [tuple]
         """
-        return list(map(lambda x: (x.name, x.is_up), self.interfaces))
+        return list(map(lambda x: (x.name, x.is_up, x.age, x.err), self.interfaces))
 
     @property
     def interface_list(self: MagicCANBus) -> [str]:
@@ -129,7 +129,10 @@ class MagicCANBus:
                 #   to close all threads and destruct itself
                 while (iface.is_up and iface.running and
                        self.keep_alive_list[iface.name].is_set()):
-                    frame = iface.recv()
+                    try:
+                        frame = iface.recv()
+                    except Exception:
+                        iface = Interface(iface.name)
                     if (frame is not None):
                         self.message_queue.put(frame, block=True)
                 iface.restart()
